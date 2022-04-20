@@ -1,6 +1,12 @@
-cuda 11.3
+python 3.10
 
-pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
+visual studio 2019 community edition + c++ workload:
+https://www.techspot.com/downloads/7241-visual-studio-2019.html
+
+cuda 11.3:
+https://developer.nvidia.com/cuda-11.3.0-download-archive
+
+pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
 
 pip install -U pip setuptools wheel
 pip install -U 'spacy[cuda113,transformers,lookups]'
