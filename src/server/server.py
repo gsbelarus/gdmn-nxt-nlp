@@ -87,7 +87,7 @@ class NLPServer(BaseHTTPRequestHandler):
                         'morph': token.morph.to_dict()
                     }
 
-                    if token.head:
+                    if token.head and token.head.i != token.i:
                         t['head'] = {
                             'id': token.head.i,
                             'ancestors': [an.i for an in token.ancestors],
