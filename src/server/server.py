@@ -8,12 +8,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 def create_language_detector(nlp, name):
     return LanguageDetector(language_detection_function=None)
 
-alphabets = {
-    'ru': 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя',
-    'en': 'abcdefghijklmnopqrstuvwxyz',
-    'by': 'абвгдеёжзійклмнопрстуўфхцчш''ыьэюя'
-}    
-
 en_model_name = 'en_core_web_trf'
 print('Loading model {0}...'.format(en_model_name))
 en_nlp = spacy.load(en_model_name)
@@ -23,7 +17,6 @@ ru_model_name = 'ru_core_news_lg'
 ru_nlp = spacy.load(ru_model_name)
 print('Loading model {0}...'.format(ru_model_name))
 ru_nlp.add_pipe('language_detector')
-
 
 hostName = 'localhost'
 serverPort = 8080
