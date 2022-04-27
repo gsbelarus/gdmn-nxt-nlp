@@ -4,6 +4,8 @@ from spacy.language import Language
 from spacy_langdetect import LanguageDetector
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+spacy.prefer_gpu()
+
 @Language.factory('language_detector')
 def create_language_detector(nlp, name):
     return LanguageDetector(language_detection_function=None)
