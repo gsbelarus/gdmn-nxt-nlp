@@ -75,9 +75,14 @@ class NLPServer(BaseHTTPRequestHandler):
                         'tag': token.tag_,
                         'shape': token.shape_,
                         'is_alpha': token.is_alpha,
+                        'is_digit': token.is_digit,
+                        'is_currency': token.is_currency,
+                        'is_bracket': token.is_bracket,
                         'is_stop': token.is_stop,
                         'dep': token.dep_,
-                        'morph': token.morph.to_dict()
+                        'morph': token.morph.to_dict(),
+                        'start': token._._start,
+                        'ent_type': token.ent_type_
                     }
 
                     if token.head and token.head.i != token.i:
@@ -90,10 +95,23 @@ class NLPServer(BaseHTTPRequestHandler):
 
                     tokens.append(t)
 
+                ents = []    
+
+                for ent in sent.ents:
+                    e = {
+                        'ent': ent.text,
+                        'lemma': ent.lemma_,
+                        'label': ent.label_,
+                        'start_char': ent.start_char,
+                        'end_char': ent.end_char
+                    }
+                    ents.append(e)
+    
                 sents.append({
                     'detectedLanguage': sent._.language,
                     'text': sent.text,
-                    'tokens': tokens
+                    'tokens': tokens,
+                    'ents': ents
                 })
 
             data = {
