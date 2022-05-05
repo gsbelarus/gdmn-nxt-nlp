@@ -3,8 +3,9 @@ import spacy
 from spacy.language import Language
 from spacy_langdetect import LanguageDetector
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from transformers import pipeline
 
-spacy.prefer_gpu()
+#spacy.prefer_gpu()
 
 @Language.factory('language_detector')
 def create_language_detector(nlp, name):
@@ -16,12 +17,18 @@ en_nlp = spacy.load(en_model_name)
 en_nlp.add_pipe('language_detector')
 
 ru_model_name = 'ru_core_news_lg'
-ru_nlp = spacy.load(ru_model_name)
 print('Loading model {0}...'.format(ru_model_name))
+ru_nlp = spacy.load(ru_model_name)
 ru_nlp.add_pipe('language_detector')
+
+print('Loading model {0}...'.format("joeddav/xlm-roberta-large-xnli"))
+classifier = pipeline("zero-shot-classification",
+                      model="joeddav/xlm-roberta-large-xnli")
 
 hostName = 'localhost'
 serverPort = 8080
+
+intent_labels = ["show", "update", "insert", "delete"]
 
 class NLPServer(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -108,12 +115,18 @@ class NLPServer(BaseHTTPRequestHandler):
                         'end_char': ent.end_char
                     }
                     ents.append(e)
+
+                res = classifier(sent.text, intent_labels)
     
                 sents.append({
                     'detectedLanguage': sent._.language,
                     'text': sent.text,
                     'tokens': tokens,
-                    'ents': ents
+                    'ents': ents,
+                    'intent': ({
+                        'label': res['labels'][0],
+                        'score': res['scores'][0]
+                    })
                 })
 
             data = {
