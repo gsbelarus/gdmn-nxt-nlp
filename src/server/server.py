@@ -55,11 +55,12 @@ class NLPServer(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        if (self.path == '/api/nlp/v1/parse-text'):
-            content_len = int(self.headers.get('Content-Length'))
-            post_body = json.loads(self.rfile.read(content_len).decode())
-            print(post_body)
 
+        content_len = int(self.headers.get('Content-Length'))
+        post_body = json.loads(self.rfile.read(content_len).decode())
+        print(post_body)
+
+        if (self.path == '/api/nlp/v1/parse-text'):
             if post_body['language'] == 'en': 
               doc = en_nlp(post_body['text'])
               model = en_model_name
