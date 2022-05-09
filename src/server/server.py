@@ -47,6 +47,39 @@ erModel_fullDbName = ''
 
 
 class NLPServer(BaseHTTPRequestHandler):
+    def getDocAndModelName(self, post_body):
+        if post_body['language'] == 'en':
+            return en_nlp(post_body['text']), en_model_name
+        elif post_body['language'] == 'ru':
+            return ru_nlp(post_body['text']), ru_model_name
+        else:
+            print('Unsupported language: {0}'.format(
+                post_body['language']))
+            return Undefined, Undefined       
+
+    def checkErModel(self, post_body):
+        global erModel
+        global erModel_fullDbName
+
+        if erModel_fullDbName != post_body['fullDbName']:
+            url = gdmn_nxt_server + '/api/v1/er-model'
+            r = requests.get(url) 
+            if r.status_code == 200:
+                erModel = r.json() 
+                erModel_fullDbName = erModel['fullDbName']
+                print('Loaded ER model: {0}'.format(erModel_fullDbName))
+                print('Entities: {0}...'.format(len(erModel['entities'].keys())))
+                print('Domains: {0}...'.format(len(erModel['domains'].keys())))
+            else:
+                print('Failed to get ER model from {0}'.format(url))
+                return False
+
+        if erModel_fullDbName != post_body['fullDbName']:
+            print('No erModel for {0}'.format(post_body['fullDbName']))
+            return False
+
+        return True
+
     def do_OPTIONS(self):
         self.send_response(200, 'ok')
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -68,6 +101,9 @@ class NLPServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes('</body></html>', 'utf-8'))
 
     def do_POST(self):
+        global erModel
+        global erModel_fullDbName
+
         print(self.path)
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -79,32 +115,13 @@ class NLPServer(BaseHTTPRequestHandler):
         print(post_body)
 
         if (self.path == '/api/nlp/v1/parse-text'):
-            if post_body['language'] == 'en':
-                doc = en_nlp(post_body['text'])
-                model = en_model_name
-            elif post_body['language'] == 'ru':
-                doc = ru_nlp(post_body['text'])
-                model = ru_model_name
-            else:
-                print('Unsupported language: {0}'.format(
-                    post_body['language']))
+            doc, model_name = self.getDocAndModelName(post_body)
+
+            if not doc:
                 return
 
-            global erModel
-            global erModel_fullDbName
-
-            if erModel_fullDbName != post_body['fullDbName']:
-                url = gdmn_nxt_server + '/api/v1/er-model'
-                r = requests.get(url) 
-                if r.status_code == 200:
-                    erModel = r.json() 
-                    erModel_fullDbName = erModel['fullDbName']
-                    print('Loaded ER model: {0}'.format(erModel_fullDbName))
-                    print('Entities: {0}...'.format(len(erModel['entities'].keys())))
-                    print('Domains: {0}...'.format(len(erModel['domains'].keys())))
-                else:
-                    print('Failed to get ER model from {0}'.format(url))
-                    return
+            if not self.checkErModel(post_body):
+                return
 
             sents = []
 
@@ -117,6 +134,7 @@ class NLPServer(BaseHTTPRequestHandler):
                         'token': token.text,
                         'lemma': token.lemma_,
                         'pos': token.pos_,
+                        'pos_explain': spacy.explain(token.pos_),
                         'tag': token.tag_,
                         'shape': token.shape_,
                         'is_alpha': token.is_alpha,
@@ -125,6 +143,7 @@ class NLPServer(BaseHTTPRequestHandler):
                         'is_bracket': token.is_bracket,
                         'is_stop': token.is_stop,
                         'dep': token.dep_,
+                        'dep_explain': spacy.explain(token.dep_),
                         'morph': token.morph.to_dict(),
                         'start': token._._start,
                         'ent_type': token.ent_type_
@@ -169,7 +188,7 @@ class NLPServer(BaseHTTPRequestHandler):
                 'version': '1.0',
                 'engine': 'SpaCy',
 
-                'models': (model),
+                'models': (model_name),
                 'text': doc.text,
                 'sents': sents
             }
