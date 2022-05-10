@@ -58,6 +58,7 @@ class NLPServer(BaseHTTPRequestHandler):
             return Undefined, Undefined       
 
     def checkErModel(self, post_body):
+        """Check if ER model is loaded"""
         global erModel
         global erModel_fullDbName
 
