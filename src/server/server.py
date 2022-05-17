@@ -144,7 +144,7 @@ class NLPServer(BaseHTTPRequestHandler):
                         'is_bracket': token.is_bracket,
                         'is_stop': token.is_stop,
                         'dep': token.dep_,
-                        'dep_explain': spacy.explain(token.dep_),
+                        'dep_explain': spacy.explain(token.dep_) if token.dep_ != 'ROOT' else '',
                         'morph': token.morph.to_dict(),
                         'start': token._._start,
                         'ent_type': token.ent_type_
