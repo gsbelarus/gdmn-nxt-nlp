@@ -178,8 +178,36 @@ class NLPServer(BaseHTTPRequestHandler):
                 tokens = []
 
                 for token in sent:
-                    if token.dep_ == 'obj':
+                    entities = Undefined
+
+                    if token.dep_ == 'obj' and token.pos_ == 'NOUN':
                         """Find an entity in the erModel"""
+                        similar = [
+                            { 
+                                'entity': name, 
+                                'lName': entity['lName'],
+                                'score': 1.0
+                            } 
+                            for name, entity in erModel['entities'].items()
+                            if 'lName' in entity and token.lemma_ in [s.strip().lower() for s in entity['lName'].split(',')]
+                        ]
+
+                        if len(similar) == 0:
+                            similarity_model = load_xx_use_lg()
+                            token_doc = similarity_model(token.lemma_)
+                            similar = [
+                                { 
+                                    'entity': name, 
+                                    'lName': entity['lName'],
+                                    'score': similarity_model(entity['lName']).similarity(token_doc) 
+                                } 
+                                for name, entity in erModel['entities'].items()
+                                if 'lName' in entity and similarity_model(entity['lName']).similarity(token_doc) > 0.5
+                            ]
+
+                        if len(similar) > 0:
+                            similar.sort(key=lambda x: x['score'], reverse=True)
+                            entities = similar[0:5]
 
                     t = {
                         'id': token.i,
@@ -200,6 +228,9 @@ class NLPServer(BaseHTTPRequestHandler):
                         'start': token._._start,
                         'ent_type': token.ent_type_
                     }
+
+                    if entities is not Undefined:
+                        t['entities'] = entities
 
                     if token.head and token.head.i != token.i:
                         t['head'] = {
