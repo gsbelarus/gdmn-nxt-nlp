@@ -6,8 +6,11 @@
         {
             "label": "serve",
             "type": "shell",
-            "command": "python src/server/server.py",
+            "command": "nodemon src/server/server.py",
+            "windows": {
+                "command": ".\\node_modules\\.bin\\nodemon src\\server\\server.py"
+            },
             "problemMatcher": []
         }
     ]
-}
+}   

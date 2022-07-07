@@ -112,7 +112,7 @@ class NLPServer(BaseHTTPRequestHandler):
         global erModel_fullDbName
 
         if erModel_fullDbName != post_body['fullDbName']:
-            url = gdmn_nxt_server + '/api/v1/er-model'
+            url = gdmn_nxt_server + '/api/v1/er-model/with-adapters'
             r = requests.get(url) 
             if r.status_code == 200:
                 erModel = r.json() 
@@ -267,6 +267,29 @@ class NLPServer(BaseHTTPRequestHandler):
                     })
                 })
 
+            q = Undefined
+
+            # build er-model query given parsed sentences
+            if len(sents) > 0:
+                # consider only first sentence
+                sent = sents[0]
+                # ...and only SHOW intent
+                if sent['intent']['label'] == 'show':
+                    obj = next((t for t in sent['tokens'] if t['dep'] == 'obj' and t['entities'] is not Undefined), None)
+                    if obj:
+                        entity = erModel['entities'][obj['entities'][0]['entity']]
+                        q = {
+                            'erModelName': erModel_fullDbName,
+                            'select': [{
+                                'entityAlias': 'z',
+                                'attrName': '*'
+                            }],
+                            'from': {
+                                'entityName': entity['name'],
+                                'entityAlias': 'z'
+                            }
+                        }
+
             data = {
                 'version': '1.0',
                 'engine': 'SpaCy',
@@ -275,6 +298,10 @@ class NLPServer(BaseHTTPRequestHandler):
                 'text': doc.text,
                 'sents': sents
             }
+
+            if q is not Undefined:
+                data['erModelQuery'] = q
+
             self.wfile.write(bytes(json.dumps(data), 'utf-8'))
         else:
             self.wfile.write(bytes(json.dumps({'answer': 'text'}), 'utf-8'))
