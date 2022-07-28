@@ -13,5 +13,8 @@
 11. `pip install -U notebook`
 12. `pip install -U ipywidgets`
 13. `jupyter nbextension enable --py widgetsnbextension`
-14. 
-15. 
+14. `pip install spacy_langdetect`
+15. `pip install python-dotenv`
+16. `pip install spacy_universal_sentence_encoder`
+17. `pip install sentencepiece`
+18. `pip install matplotlib.pyplot`
