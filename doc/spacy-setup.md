@@ -9,7 +9,9 @@
 7. `python -m spacy download en_core_web_trf`
 8. `python -m spacy download pl_core_news_lg`
 9. `python -m spacy download ru_core_news_lg`
-10. `pip install jupyterlab`
-11. `pip install notebook`
-12. `pip install ipywidgets`
+10. `pip install -U jupyterlab`
+11. `pip install -U notebook`
+12. `pip install -U ipywidgets`
 13. `jupyter nbextension enable --py widgetsnbextension`
+14. 
+15. 
