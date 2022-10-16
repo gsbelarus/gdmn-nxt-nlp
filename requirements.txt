@@ -94,7 +94,7 @@ pluggy==1.0.0
 preshed==3.0.6
 prometheus-client==0.14.1
 prompt-toolkit==3.0.30
-protobuf==3.19.4
+protobuf==3.19.5
 psutil==5.9.1
 pure-eval==0.2.2
 py==1.11.0
